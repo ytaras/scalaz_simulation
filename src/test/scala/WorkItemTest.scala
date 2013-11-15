@@ -9,14 +9,14 @@ import Arbitrary._
 import scalaz._
 import Scalaz._
 
-class Check extends Properties("WorkItem") with FunSuite with Checkers
-    with WorkItem {
-
+class WorkItemCheck extends Properties("WorkItem") with FunSuite with Checkers
+    with WorkItemGen {
   test("workitems are ordered by time") {
     check { (x: WorkItem, y: WorkItem) => x ?|? y == x.time ?|? y.time }
   }
+  implicit val wiA: Arbitrary[WorkItem] = Arbitrary(wiG)
+}
 
+trait WorkItemGen extends WorkItem {
   val wiG = arbitrary[Int] map { x => WorkItem(Time(x)) }
-  implicit val wiA = Arbitrary(wiG)
-
 }

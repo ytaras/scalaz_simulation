@@ -7,6 +7,7 @@ trait WorkItem extends WithTags {
 
   case class WorkItem(time: Time)
   val first = WorkItem(Time(1))
+
   implicit val wiOrder: Order[WorkItem] = Order.orderBy { _.time  }
   // Won't compile - we have to tag value as Time
   // val failing = WorkItem(2)
@@ -29,4 +30,20 @@ trait WithTags {
     def order(x: Time, y: Time) = Order[Int].order(x, y)
   }
 
+}
+
+trait Queue {
+  import scalaz.Order
+  import scalaz.Foldable
+  import scalaz.syntax.order._
+  type Queue[A] = List[A]
+
+  // TODO Reverse order of workitem and put greater things in front
+  def append[A](q: Queue[A], i: A)(implicit o: Order[A]): Queue[A] = q match {
+    case h :: xs if i gt h => h :: append(xs, i)
+    case _ => i :: q
+  }
+
+  def listToQueue[F[_], A](x: F[A])(implicit o: Order[A], f: Foldable[F]) =
+    f.
 }
