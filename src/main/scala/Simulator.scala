@@ -26,16 +26,18 @@ trait WorkItem {
 
 trait PriorityList {
   import scalaz.Monoid
+  import scalaz.Equal
   object PLTags {
     sealed trait Priority
     val Priority = Tag.of[Priority]
   }
   type PriorityList[A] = List[A] @@ PLTags.Priority
   class priorityList[A](implicit o: Order[A])
-      extends Monoid[PriorityList[A]] { self =>
+      extends Monoid[PriorityList[A]] with Equal[PriorityList[A]] { self =>
     import scalaz.Foldable
     import scalaz.syntax.foldable._
     import scalaz.std.list._
+    def equal(a: PriorityList[A], b: PriorityList[A]) = a == b
     def zero: PriorityList[A] = Tag(List())
     def append(a: PriorityList[A], b: => PriorityList[A]): PriorityList[A] =
       a.foldLeft(b)(insert)
@@ -50,6 +52,6 @@ trait PriorityList {
   def fromList[A](a: List[A])(implicit m: Monoid[PriorityList[A]], o: Order[A]) =
     a.foldLeft(m.zero)(insert)
 
-  implicit def priorityListMonoidInstance[A](implicit o: Order[A]) =
+  implicit def priorityListInstances[A](implicit o: Order[A]) =
     new priorityList[A]
 }
