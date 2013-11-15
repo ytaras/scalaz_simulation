@@ -1,11 +1,11 @@
-scalaVersion := "2.10.1"
+scalaVersion := "2.10.0"
 
 libraryDependencies ++= Seq(
   "org.scalaz" %% "scalaz-core" % "7.0.4",
   "org.scalaz" %% "scalaz-effect" % "7.0.4",
   "org.scalaz" %% "scalaz-typelevel" % "7.0.4",
   "org.scalaz" %% "scalaz-scalacheck-binding" % "7.0.4" % "test",
-  "org.scalatest" %% "scalatest" % "1.9.1" % "test"
+  "org.scalatest" %% "scalatest" % "2.0" % "test"
 )
 
 scalacOptions ++= Seq("-feature"

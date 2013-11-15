@@ -9,7 +9,7 @@ import Arbitrary._
 import scalaz._
 import Scalaz._
 
-class WorkItemCheck extends Properties("WorkItem") with FunSuite with Checkers
+class WorkItemCheck extends FunSuite with Checkers
     with WorkItemGen {
   test("workitems are ordered by time") {
     check { (x: WorkItem, y: WorkItem) => x ?|? y == x.time ?|? y.time }

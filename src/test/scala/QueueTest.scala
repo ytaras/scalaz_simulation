@@ -9,15 +9,13 @@ import Arbitrary._
 import scalaz._
 import Scalaz._
 
-class QueueCheck extends Properties("Queue") with FunSuite with Checkers
-    with Queue with WorkItemGen {
+class QueueCheck extends FunSuite with Checkers
+    with PriorityList with WorkItemGen {
 
   test("workitems are ordered by time in queue") {
     check { x: List[WorkItem] =>
-      x.foldLeft(Monoid[List].zero)((x, y) => append(x, y)) sliding(2) filter { _.size == 2 } map { w => w(0) ?|? w(1) } forall { _ != Ordering.GT }
+      fromList(x) sliding(2) filter { _.size == 2 } map { w => w(0) ?|? w(1) } forall { _ != Ordering.GT }
     }
   }
-// TODO WorkQueue as monoid
   implicit val wiA = Arbitrary(wiG)
-
 }
