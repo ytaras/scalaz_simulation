@@ -10,26 +10,29 @@ trait OrderedListComponent {
   import scalaz.syntax.order._
   import scalaz.syntax.equal._
 
-  private def addOrdered[T](vs: List[T], v: T)(implicit o: Order[T]): List[T] =
-    vs match {
-      case x :: xs if x lt v => x :: addOrdered(xs, v)
-      case _ => v :: vs
-    }
-
-  private def mergeOrdered[T](v1: List[T], v2: List[T])(implicit o: Order[T]): List[T] =
-    (v1, v2) match {
-      case (Nil, _) => v2
-      case (_, Nil) => v1
-      case (x :: xs, y :: ys) =>
-        if (x lt y) x :: mergeOrdered(xs, v2)
-        else y :: mergeOrdered(v1, ys)
-    }
-
+  sealed trait OrderedList[T] {
+    def toList: List[T]
+    def merge(order: OrderedList[T]): OrderedList[T]
+    def add(v: T): OrderedList[T]
+  }
 
   object OrderedList {
-    def empty[T](implicit o: Order[T]): OrderedList[T] = new OrderedList(List())
+    def empty[T](implicit o: Order[T]): OrderedList[T] = L(Nil)
+
     def apply[T](xs: List[T])(implicit o: Order[T]): OrderedList[T] =
-      new OrderedList(xs.foldLeft(List[T]()) { addOrdered(_, _) })(o)
+      xs.foldLeft(empty(o)) { (x, y) => x add y }
+  }
+
+  private case class L[T](val toList: List[T])(implicit o: Order[T])
+      extends OrderedList[T] {
+    def merge(other: OrderedList[T]) =
+      toList.foldLeft(other) { _ add _ }
+    def add(v: T) = L(addOrdered(toList, v))
+
+    private def addOrdered(l: List[T], v: T): List[T] = l match {
+      case x :: xs if x lt v => x :: addOrdered(xs, v)
+      case _ => v :: l
+    }
   }
 
   implicit def orderedListInstances[T](implicit o: Order[T], e: Equal[T]) =
@@ -38,13 +41,7 @@ trait OrderedListComponent {
       override def append(v1: OrderedList[T], v2: => OrderedList[T]) =
         v1 merge v2
       override def equal(v1: OrderedList[T], v2: OrderedList[T]) =
-        v1.l equals v2.l
+        v1.toList equals v2.toList
     }
 
-  class OrderedList[T] private ( val l: List[T])(implicit val o: Order[T]) {
-    def add(v: T) = new OrderedList(addOrdered(l, v))(o)
-    def merge(other: OrderedList[T]) = new OrderedList(mergeOrdered(l, other.l))
-    def toList = l
-    override def toString = s"OrderedList: ${l}"
-  }
 }
